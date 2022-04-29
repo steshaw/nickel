@@ -6,7 +6,7 @@
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
-    let
+      let
         pkgs = nixpkgs.legacyPackages.${system};
         buildPdf = { isDevShell ? false }:
           pkgs.stdenv.mkDerivation {
@@ -19,19 +19,12 @@
               ott
               (texlive.combine {
                 inherit (texlive)
-                # biblatex
-                collection-fontsrecommended
-                # comment
-                # fontaxes
-                latexmk
-                # listings
-                # lm
-                scheme-small
-                # ucs
-                wasy cm-super unicode-math lm-math capt-of
-                mathpartir
-                # appendix
-                supertabular;
+                  collection-fontsrecommended
+                  latexmk
+                  scheme-small
+                  wasy cm-super unicode-math lm-math capt-of
+                  mathpartir
+                  supertabular;
               })
             ];
 
@@ -41,9 +34,10 @@
             '';
           };
 
-      in rec {
+      in
+      rec {
         defaultPackage = packages.buildPdf;
-        packages.buildPdf = buildPdf {};
-        devShell = buildPdf {isDevShell = true;};
+        packages.buildPdf = buildPdf { };
+        devShell = buildPdf { isDevShell = true; };
       });
 }
