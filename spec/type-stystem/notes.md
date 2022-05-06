@@ -115,17 +115,18 @@ a
 Array (a -> Num) Array ({_ Num} -> Num)
 match a <: {_: Num}
 match a >: {foo : Num}
-{foo : Num} <: a <: {_: Num} => coherence of lower bounds + max of lower bounds inf (if it exists) + coherence of upper bounds
+{foo : Num} <: a <: {_: Num} => coherence of lower bounds + max of lower bounds
+inf (if it exists) + coherence of upper bounds
 ```
 
 ### Join
 
-```
+```nickel
 join : { instantiations } -> Maybe Type
 fst {foo = 1} {bar = 2}
 ```
 
-```
+```nickel
 join: find the min type inside the set
 is_sub without unification
 more involved join: {foo : Num} @+@ {bar : Num} => {_ : Num}
@@ -196,9 +197,18 @@ if b then 2 else "foo" # Fail
 
 Idea: take the approach of Parreaux. Record upper and lower bound of unification
 variables, and solve in phases.
-1st phase : inequalities that comes down to unification.
+0th phase: solve `?a <: b` => unify right away
+1st phase : inequalities that comes down to unification of the form `?a <: T` if
+`T != Dyn`?
 2nd phase : `?a >: _` -> unification: we never infer Dyn
 3rd phase : Only `Dyn >: ?a`. Either it's unsound, or we don't care.
+
+`?a <: b`
+
+`{l1: T, .., ln: T} <: {_ : T}`
+`T != a <: Dyn`
+
+`b </: Dyn`
 
 `Num -> forall a. t   ?= ?b -> ?c`: this may introduce forall on the left. What
 to do with this? We want to avoid having foralls being part of the subtyping
@@ -208,6 +218,20 @@ relation.
 
 Let's try to see an example:
 
+```nickel
+fst : forall a. a -> a -> a
+
+let x : Dyn = .. in
+
+(fst 1 x : T)
+
+_a 
+
+Num <: _a
+Dyn <: _a
+
+{Num, Dyn} <: _a <: T1, T2, .., Tn
+_a := max {Num, Dyn}
 ```nickel
 
 let foo : Num -> forall a. (a -> a) = fun _ => id in
@@ -269,7 +293,7 @@ _d := forall a. (a -> a)
 
 ```math
 f : forall a. a -> a -> a
-let g = f {foo : Num} {_ : Num}
+let g = f {foo : Num, bar: PosNum} {_ : Num}
 
 _a >: {foo : _a}
 _a >: {_ : _b}
@@ -278,8 +302,70 @@ _a >: {_ : _b}
 So what to do when `_a >: { ... }` ?
 $\exists i . \forall j, t_j \lt t_i$
 
+```
+min {foo : _a, bar: _c} {_ : _b}
+-> {_a, _c} <: _b
+
+min _a _c ...
+```
+
+### QuickMin
+
 QuickMin: eliminate cases of Dyn.
 We would like to characterize what works: if there is no Dyn in code, it should
 be equivalent to unification.
 
 What algorithm to use to do that? Causes unfications?
+
+We can use the meet-if-present algorithm. Conjecture: min of a set can be
+computed by taking the min 2 by 2 + checking that the min is realized. Indeed,
+the subtyping relation is in fact a lattice, but the thing is just we don't want
+to infer an upper bound that wasn't originally inferred or annotated as such.
+
+## Call w/ Richard
+
+- are the $\Leftarrow^h$ and $\Rightarrow^\forall$ necessary?
+  Probably not? Confirm with Alejandro.
+
+- Richard: deep instantiation is actually not free in practice. Deep obscure
+  type errors in some situations. That's not clear. You can combine actually
+  deep instantation and impredicativity if you weak your type inference. Not
+  sure the tradeoff is totally worth it in practice.
+
+- we can do a bit better than fail quickmin.
+
+```nickel
+fun  x => (x : Num) ... (x : Dyn)
+```
+
+### Questions
+
+#### Possible bound configurations
+
+- Can we meet all possibilities in practice? That is, unification variable `?a`
+  with both several lower bounds and several upper bounds? In this situation,
+  what should we do?
+
+Basic idea:
+
+**Only lower bounds**: unify with the max.
+
+**Only upper bounds**: unify with the min.
+
+**Both upper and lower bounds**:
+
+compute mlb (maximum of lower bound), compute mub (minimum of upper bounds),
+generate `mlb <: mub` (or would that be taken care of during the first phase of
+the inference?).
+
+Then unify with mlb: that's the most precise type satisfying the bounds.
+
+Issue: that may not be the best type. E.g:
+
+`?a1 -> ?b1 <: ?x <: ?a2 -> ?b2`
+
+if we unify we get `?x := ?a2 -> ?b2`
+if we "unify" + propagate `?x := ?y -> ?z`
+with `?x1 := ?a1, ?x2 := ?b2`
+
+Do we care?
