@@ -30,7 +30,7 @@ I'm personally not sold on impredicative polymorphism. It would have been nice
 in, say, OCaml, but I haven't often said "oh my god if only we had impredicative
 polymorphism" (although, we can still use it by boxing values in a record). It
 does make thing a bit more complex, since they are order dependent. How does
-haskell proceed, in the monomorphic case? Can Quick Look be combined with the
+askell proceed, in the monomorphic case? Can Quick Look be combined with the
 subtyping approach of Krishnawsami et al? If yes, then ok, why not.
 
 **Correction**: it can't really. K. et al do deep instantiation (`1 -> forall a.
@@ -51,8 +51,8 @@ Examples of what we want to typecheck?
 
 ### Several subtyping
 
-If we end up with invariance for subtyping, does it really make sense to burry
-instantiation into subtying? Maybe we should rather have:
+If we end up with invariance for subtyping, does it really make sense to bury
+instantiation into subtyping? Maybe we should rather have:
 
 1. A decidable, variant relation, for records and co.
 2. Instantiation, that is mostly invariant
@@ -90,7 +90,7 @@ choose id : forall a. (a >= sigma_id) a -> a
 - Do not instantiate stuff to object as a fallback. Rather try to find `max {
   possible instantiations }`. Possible instantiations being determined with a
   Quick-Look like phase, as for polymorphism. But then, we may want to have a
-  of ML subtyping then. One possibility: infer, then determine the sutff. Do not
+  of ML subtyping then. One possibility: infer, then determine the stuff. Do not
   loose inference, then.
 - For subtyping, let's do something easy. As for QuickLook: try to do the
   not-too-stupid-stuff. If that doesn't work, fall back to "stupid,
@@ -99,10 +99,10 @@ choose id : forall a. (a >= sigma_id) a -> a
 
 ## Type system
 
-- no sumsumption rule for polymorphism (we lose $\eta$-rules for
+- no subsumption rule for polymorphism (we lose $\eta$-rules for
 polymorphism).
 - separate subtyping for `Dyn` types + `dict < record` from
-    polymorphism-inducedsubtyping
+    polymorphism-induced subtyping
 - PTIAT + Quick-Look. Start with predicative PTIAT. Enhance with QuickLook after.
 - QuickLook like-phase for subtyping. Start with simple inference. Later on may
   perform full type inference, with a way of reusing it. If this fails, then
@@ -134,7 +134,7 @@ more involved join: {foo : Num} @+@ {bar : Num} => {_ : Num}
 
 ### First draft
 
-- PTIAT without deep instantiation / sumsumption
+- PTIAT without deep instantiation / subsumption
 - Quick Look at Subtyping without any bounds checking. Means subtyping is
   invariant (NO: actually, this gives unsound advice, that worst than the
   default thing: see example array above).
@@ -225,7 +225,7 @@ let x : Dyn = .. in
 
 (fst 1 x : T)
 
-_a 
+_a
 
 Num <: _a
 Dyn <: _a
@@ -302,7 +302,7 @@ _a >: {_ : _b}
 So what to do when `_a >: { ... }` ?
 $\exists i . \forall j, t_j \lt t_i$
 
-```
+```nickel
 min {foo : _a, bar: _c} {_ : _b}
 -> {_a, _c} <: _b
 
@@ -315,12 +315,14 @@ QuickMin: eliminate cases of Dyn.
 We would like to characterize what works: if there is no Dyn in code, it should
 be equivalent to unification.
 
-What algorithm to use to do that? Causes unfications?
+What algorithm to use to do that? Causes unifications?
 
 We can use the meet-if-present algorithm. Conjecture: min of a set can be
 computed by taking the min 2 by 2 + checking that the min is realized. Indeed,
 the subtyping relation is in fact a lattice, but the thing is just we don't want
 to infer an upper bound that wasn't originally inferred or annotated as such.
+
+### Characterization
 
 ## Call w/ Richard
 
@@ -329,7 +331,7 @@ to infer an upper bound that wasn't originally inferred or annotated as such.
 
 - Richard: deep instantiation is actually not free in practice. Deep obscure
   type errors in some situations. That's not clear. You can combine actually
-  deep instantation and impredicativity if you weak your type inference. Not
+  deep instantiation and impredicativity if you weak your type inference. Not
   sure the tradeoff is totally worth it in practice.
 
 - we can do a bit better than fail quickmin.
@@ -369,3 +371,7 @@ if we "unify" + propagate `?x := ?y -> ?z`
 with `?x1 := ?a1, ?x2 := ?b2`
 
 Do we care?
+
+**No**, actually. The strategy is: upper bound `Dyn`, keep for the end. Any
+other inequality can be decomposed by decomposing the variable and applying the
+constraints.
