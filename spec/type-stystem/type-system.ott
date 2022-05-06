@@ -425,6 +425,11 @@ G, x : t |- e2 checks t_mono
 ----------------------------------- :: Let
 G |- let x = e1 in e2 checks t_mono
 
+G |- h e1 .. en inst_as t1, .., tn, t_mono
+G |- ei checks ti
+------------------------------------------ :: App
+G |- h e1 .. en checks t_mono
+
 G |- e checks <l1, .., ln>
 G |- ei checks t_mono
 ----------------------------------------------------- :: Case
