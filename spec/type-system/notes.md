@@ -393,3 +393,42 @@ Do we care?
 **No**, actually. The strategy is: upper bound `Dyn`, keep for the end. Any
 other inequality can be decomposed by decomposing the variable and applying the
 constraints.
+
+#### Pick the next constraints
+
+In [examples](./examples.md), we forged situations where the next constraint to
+solve is not fully obvious because there are several unresolved variables, e.g.:
+
+```text
+Num <: ?a1
+?x1 <: ?a1
+?x1 <: Dyn
+```
+
+We can't set right away `?x1 := ?a1`, because `?a1` may end up being unified
+with `Dyn` (here we could, because it's the last constraining upper bound, so
+even if `?a1` ends up being `Dyn`, this is correct, but it may not be in the
+general case?). Can we solve on `?a1`? Because one of the lower bound is a
+unification variable. What max would we compute? Could we set `?x1 := Num`
+necessarily? It's true that otherwise, typechecking fails, so we may try as
+well.
+
+More generally, we have to chose how to pick the next constraint to solve (and,
+if possible, efficiently).
+
+- **phase 1**: variables with an upper bound (but possibly more) which is neither
+  `Dyn` nor another variable: `?a <: T ..`. Set `?a := T ?a1 .. ?an` and
+  propagate the constraint to `?a1 .. ?an` (could be equalities if `T` is
+  invariant in some arguments). Do that repeatedly.
+  Q: should we also substitute lone variables, with only inequality `?a1 <: ?a2`
+  by `?a1 := ?a2` to reduce the number of unresolved variables?
+- **phase 2**: solve lower bounds `T1 <: ?a, .., Tn <: ?a` (with the
+  substitution of previously unified variables) by setting `?a := max (T1, ..,
+  TN)`. Max may perform unification: `max (?x, T) => ?x := T, max = T`? I don't
+  think so. Compute the max without unification variables, and then: if `max` is
+  `Dyn`, then set `?a := Dyn` and do not solve `?x`. Otherwise, set `?x = max`
+  and propagate? So in any case, what we may want is to ignore unification
+  variables lower bound, solve for the max, and then considers those
+  inequalities from the point of view of the LHS (a variable with an upper
+  bound).
+- **phase 3**: check `Dyn`
