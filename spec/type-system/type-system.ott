@@ -1,8 +1,9 @@
 % NICKEL
 metavar var, x, y, z ::=
+metavar uvar, d {{ tex ?a }}, d' {{ tex ?b }} ::=
 metavar labels, l, l' ::=
 metavar typevar, a {{ tex \alpha }}, b {{ tex \beta }}, c {{ tex \gamma }} ::=
-metavar rowvar, A {{ tex \theta }}, B {{ tex \iota }}, C {{ tex \kappa }} ::=
+metavar rowvar, A {{ tex \theta }}, B {{ tex \iota }} ::=
 indexvar i, j, k, n, m ::=
 
 grammar
@@ -40,6 +41,23 @@ t_mono {{ tex \rho }} :: 't_mono_' ::=
  | t_mono [ rows / A ]        :: M :: SubstRow
 
 t {{ tex \sigma }}, u {{ tex \tau }} :: 't_' ::=
+ | Dyn                        ::   :: Dyn
+ | a                          ::   :: TypeVar
+ | A                          ::   :: RowVar
+ | t1 -> t2                   ::   :: Fun
+ | { rows }                   ::   :: Record
+ | { _ : t }                  ::   :: DynRecord
+ | < rows_enum >              ::   :: Enum
+ | Array t                    ::   :: Array
+ | # e                        ::   :: Contract
+ | forall a1 ... an . t       ::   :: Forall
+ | forall A1 ... An . t       ::   :: ForallRow
+ | ( t )                      :: S :: Parens
+ | t [ u / a ]                :: M :: Subst
+ | t [ rows / A ]             :: M :: SubstRow
+
+t_unif {{ tex \sigma }}       :: 't_unif_' ::=
+ | d                          ::   :: UnifVar
  | Dyn                        ::   :: Dyn
  | a                          ::   :: TypeVar
  | A                          ::   :: RowVar
@@ -104,12 +122,15 @@ whnf, w :: 'w_' ::=
  | [ e1 , .. , en ]           ::   :: Array
 
 pat :: 'pat_' ::=
- | x                               ::   :: Var
-% | { l1 = pat1 , .. , ln = patn } ::   :: Record
-% | [ pat1 , .., patn ]            ::   :: Array
+ | x                              ::   :: Var
+%| { l1 = pat1 , .. , ln = patn } ::   :: Record
+%| [ pat1 , .., patn ]            ::   :: Array
 
 binding :: 'bnd_' ::=
  | x1 : t1 , .. , xn : tn ::  :: Vars
+
+C, U :: 'constr_' ::=
+ | t_unif <: t_unif'           ::   :: Sub
 
 G {{ tex \Gamma }} :: 'ctx_' ::=
  | empty        ::  :: nil
@@ -139,6 +160,7 @@ terminals :: 'terminals_' ::=
  | forall           ::  :: Forall {{ tex \forall }}
  | |-               ::  :: Entails {{ tex \vdash }}
  | infers           ::  :: infers {{ tex {\color{red}\Rightarrow} }}
+ | solves_as        ::  :: solves_as {{ tex \twoheadrightarrow }}
  | infers_head      ::  :: infers_head {{ tex {\color{red}\Rightarrow}^h }}
  | checks           ::  :: checks {{ tex {\color{blue}\Leftarrow} }}
  | checks_poly      ::  :: checks_poly {{ tex {\color{blue}\Leftarrow}^\forall }}
@@ -455,6 +477,72 @@ G |- e checks t_mono2
 defn
 G |- e inst_as t1, .., tn, t_mono :: :: inst_as :: BidirInst_
   by
+
+defn
+Psi |- t <: u solves_as t1 <: u1, .., tn <: un :: :: solves_as :: ConstrSolves_
+  by
+
+a set_in Psi
+----------------------- :: ReflVar
+Psi |- a <: a solves_as 
+
+A set_in Psi
+----------------------- :: ReflRowVar
+Psi |- A <: A solves_as
+
+------------------------------------------------------------- :: ReflForall
+Psi |- forall a1 ... an . t <: forall a1 ... an . t solves_as
+
+------------------------------------------------------------- :: ReflForallRow
+Psi |- forall A1 ... An . t <: forall A1 ... An . t solves_as
+
+
+Psi |-  <: t4
+--------------------------- :: Arrow
+Psi |- t1 -> t2 <: t3 -> t4
+
+
+t is_not_var
+--------------- :: Dyn
+Psi |- t <: Dyn
+
+Psi |- t <: u
+--------------------------------------- :: Array
+Psi |- Array t <: Array u
+
+Psi |- t <: u
+--------------------------------------- :: DynRecord1
+Psi |- {_ : t} <: {_ : u}
+
+Psi |- ti <: ui
+-------------------------------------------------------- :: Record
+Psi |- { l1 : t1, .., ln : tn} <: { l1 : u1, .., ln: un}
+
+Psi |- ti <: ui
+------------------------------------------------------------------------------------------ :: DynTail
+Psi |- { l1 : t1, .. , ln : tn, l'1 : t'1, .., l'm : t'm } <: { l1 : u1, .., ln: un | Dyn }
+
+Psi |- ti <: u
+--------------------------------------- :: DynRecord2
+Psi |- { l1 : t1, .., ln : tn} <: {_ : u}
+
+%Psi |- u
+%Psi |- t1[u/a] <: t2
+%------------------------- :: ForallLeft
+%Psi |- forall a. t1 <: t2
+%
+%%Psi |- {rows}'
+%Psi |- t1[rows/A] <: t2
+%------------------------- :: ForallRowLeft
+%Psi |- forall A. t1 <: t2
+%
+%Psi, a |- t1 <: t2
+%------------------------- :: ForallRight
+%Psi |- t1 <: forall a. t2
+
+%Psi, A |- t1 <: t2
+%------------------------- :: ForallRowRight
+%Psi |- t1 <: forall A. t2
 
 %defn
 %e --> e' :: :: Jeval :: E_

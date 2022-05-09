@@ -36,9 +36,10 @@
 \newcommand{\ottmetavars}{
 \ottmetavartabular{
  $ \ottmv{var} ,\, \ottmv{x} ,\, \ottmv{y} ,\, \ottmv{z} $ &  \\
+ $ \ottmv{uvar} ,\, ?a ,\, ?b $ &  \\
  $ \ottmv{labels} ,\, \ottmv{l} ,\, \ottmv{l'} $ &  \\
  $ \ottmv{typevar} ,\, \alpha ,\, \beta ,\, \gamma $ &  \\
- $ \ottmv{rowvar} ,\, \theta ,\, \iota ,\, \kappa $ &  \\
+ $ \ottmv{rowvar} ,\, \theta ,\, \iota $ &  \\
  $ \ottmv{i} ,\, \ottmv{j} ,\, \ottmv{k} ,\, \ottmv{n} ,\, \ottmv{m} $ &  \\
 }}
 
@@ -83,6 +84,24 @@
 \newcommand{\ottt}{
 \ottrulehead{\sigma  ,\ \tau }{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottkw{Dyn}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\alpha}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\theta}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\sigma_{{\mathrm{1}}}  \to  \sigma_{{\mathrm{2}}}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{\{}  \ottnt{rows}  \ottsym{\}}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{\{} \, \ottkw{\_} \, \ottsym{:}  \sigma  \ottsym{\}}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{<}  \ottnt{rows\_enum}  \ottsym{>}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Array} \, \sigma}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{\#}  \ottnt{e}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\forall \, \alpha_{{\mathrm{1}}} \, ... \, \alpha_{\ottmv{n}}  \ottsym{.}  \sigma}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\forall \, \theta_{{\mathrm{1}}} \, ... \, \theta_{\ottmv{n}}  \ottsym{.}  \sigma}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottsym{(}  \sigma  \ottsym{)}} {\textsf{S}}{}{}{}\ottprodnewline
+\ottprodline{|}{\sigma  \ottsym{[}  \tau   \ottsym{/}  \alpha  \ottsym{]}} {\textsf{M}}{}{}{}\ottprodnewline
+\ottprodline{|}{\sigma  \ottsym{[}  \ottnt{rows}  \ottsym{/}  \theta  \ottsym{]}} {\textsf{M}}{}{}{}}
+
+\newcommand{\otttXXunif}{
+\ottrulehead{\sigma}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{?a}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottkw{Dyn}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\alpha}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\theta}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\sigma_{{\mathrm{1}}}  \to  \sigma_{{\mathrm{2}}}}{}{}{}{}\ottprodnewline
@@ -157,6 +176,10 @@
 \ottrulehead{\ottnt{binding}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottmv{x_{{\mathrm{1}}}}  \ottsym{:}  \sigma_{{\mathrm{1}}}  \ottsym{,} \, .. \, \ottsym{,}  \ottmv{x_{\ottmv{n}}}  \ottsym{:}  \sigma_{\ottmv{n}}}{}{}{}{}}
 
+\newcommand{\ottC}{
+\ottrulehead{\ottnt{C}  ,\ \ottnt{U}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\sigma  \ottsym{<:}  \sigma'}{}{}{}{}}
+
 \newcommand{\ottG}{
 \ottrulehead{\Gamma}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottkw{empty}}{}{}{}{}\ottprodnewline
@@ -189,6 +212,7 @@
 \ottprodline{|}{ \forall }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ \vdash }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ {\color{red}\Rightarrow} }{}{}{}{}\ottprodnewline
+\ottprodline{|}{ \twoheadrightarrow }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ {\color{red}\Rightarrow}^h }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ {\color{blue}\Leftarrow} }{}{}{}{}\ottprodnewline
 \ottprodline{|}{ {\color{blue}\Leftarrow}^\forall }{}{}{}{}\ottprodnewline
@@ -209,7 +233,8 @@
 \ottprodline{|}{\Gamma  \vdash  \ottnt{h} \, {\color{red}\Rightarrow}^h \, \sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Gamma  \vdash  \ottnt{e} \, {\color{red}\Rightarrow} \, \sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Gamma  \vdash  \ottnt{e} \, {\color{blue}\Leftarrow} \, \sigma}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\Gamma  \vdash  \ottnt{e} \, \rightsquigarrow \, \ottsym{t1,}  \ottsym{..,}  \ottsym{tn,}  \rho}{}{}{}{}}
+\ottprodline{|}{\Gamma  \vdash  \ottnt{e} \, \rightsquigarrow \, \ottsym{t1,}  \ottsym{..,}  \ottsym{tn,}  \rho}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\Psi  \vdash  \sigma  \ottsym{<:}  \tau  \, \twoheadrightarrow \, \sigma_{{\mathrm{1}}}  \ottsym{<:}  \ottsym{u1,}  \ottsym{..,}  \sigma_{\ottmv{n}}  \ottsym{<:}  \tau _{\ottmv{n}}}{}{}{}{}}
 
 \newcommand{\ottjudgement}{
 \ottrulehead{\ottnt{judgement}}{::=}{}\ottprodnewline
@@ -218,6 +243,7 @@
 \newcommand{\ottuserXXsyntax}{
 \ottrulehead{\ottnt{user\_syntax}}{::=}{}\ottprodnewline
 \ottfirstprodline{|}{\ottmv{var}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottmv{uvar}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{labels}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{typevar}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottmv{rowvar}}{}{}{}{}\ottprodnewline
@@ -228,12 +254,14 @@
 \ottprodline{|}{\ottnt{rows\_enum}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\rho}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\sigma}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{e}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{h}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{value}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{whnf}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{pat}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{binding}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{C}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Gamma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{typebinding}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Psi}{}{}{}{}\ottprodnewline
@@ -247,12 +275,14 @@
 \ottrowsXXenum\ottinterrule
 \otttXXmono\ottinterrule
 \ottt\ottinterrule
+\otttXXunif\ottinterrule
 \otte\ottinterrule
 \otth\ottinterrule
 \ottvalue\ottinterrule
 \ottwhnf\ottinterrule
 \ottpat\ottinterrule
 \ottbinding\ottinterrule
+\ottC\ottinterrule
 \ottG\ottinterrule
 \otttypebinding\ottinterrule
 \ottPsi\ottinterrule
@@ -746,9 +776,109 @@
 \newcommand{\ottdefninstXXas}[1]{\begin{ottdefnblock}[#1]{$\Gamma  \vdash  \ottnt{e} \, \rightsquigarrow \, \ottsym{t1,}  \ottsym{..,}  \ottsym{tn,}  \rho$}{}
 \end{ottdefnblock}}
 
+%% defn solves_as
+\newcommand{\ottdruleConstrSolvesXXReflVar}[1]{\ottdrule[#1]{%
+\ottpremise{\alpha \, \in \, \Psi}%
+}{
+\texttt{\textcolor{red}{<<no parses (char 23): Psi \mbox{$\mid$}- a <: a solves\_as***  >>}}}{%
+{\ottdrulename{ConstrSolves\_ReflVar}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXReflRowVar}[1]{\ottdrule[#1]{%
+\ottpremise{\theta \, \in \, \Psi}%
+}{
+\texttt{\textcolor{red}{<<no parses (char 23): Psi \mbox{$\mid$}- A <: A solves\_as*** >>}}}{%
+{\ottdrulename{ConstrSolves\_ReflRowVar}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXReflForall}[1]{\ottdrule[#1]{%
+}{
+\texttt{\textcolor{red}{<<no parses (char 61): Psi \mbox{$\mid$}- forall a1 ... an . t <: forall a1 ... an . t solves\_as*** >>}}}{%
+{\ottdrulename{ConstrSolves\_ReflForall}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXReflForallRow}[1]{\ottdrule[#1]{%
+}{
+\texttt{\textcolor{red}{<<no parses (char 61): Psi \mbox{$\mid$}- forall A1 ... An . t <: forall A1 ... An . t solves\_as*** >>}}}{%
+{\ottdrulename{ConstrSolves\_ReflForallRow}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXArrow}[1]{\ottdrule[#1]{%
+\ottpremise{\texttt{\textcolor{red}{<<no parses (char 11): Psi \mbox{$\mid$}-  <: ***t4 >>}}}%
+}{
+\texttt{\textcolor{red}{<<no parses (char 27): Psi \mbox{$\mid$}- t1 -> t2 <: t3 -> t4*** >>}}}{%
+{\ottdrulename{ConstrSolves\_Arrow}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXDyn}[1]{\ottdrule[#1]{%
+\ottpremise{\sigma \, \text{not a variable}}%
+}{
+\texttt{\textcolor{red}{<<no parses (char 15): Psi \mbox{$\mid$}- t <: Dyn*** >>}}}{%
+{\ottdrulename{ConstrSolves\_Dyn}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXArray}[1]{\ottdrule[#1]{%
+\ottpremise{\Psi  \vdash  \sigma  \ottsym{<:}  \tau }%
+}{
+\texttt{\textcolor{red}{<<no parses (char 25): Psi \mbox{$\mid$}- Array t <: Array u*** >>}}}{%
+{\ottdrulename{ConstrSolves\_Array}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXDynRecordOne}[1]{\ottdrule[#1]{%
+\ottpremise{\Psi  \vdash  \sigma  \ottsym{<:}  \tau }%
+}{
+\texttt{\textcolor{red}{<<no parses (char 25): Psi \mbox{$\mid$}- \{\_ : t\} <: \{\_ : u\}*** >>}}}{%
+{\ottdrulename{ConstrSolves\_DynRecord1}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXRecord}[1]{\ottdrule[#1]{%
+\ottpremise{\Psi  \vdash  \sigma_{\ottmv{i}}  \ottsym{<:}  \tau _{\ottmv{i}}}%
+}{
+\texttt{\textcolor{red}{<<no parses (char 56): Psi \mbox{$\mid$}- \{ l1 : t1, .., ln : tn\} <: \{ l1 : u1, .., ln: un\}*** >>}}}{%
+{\ottdrulename{ConstrSolves\_Record}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXDynTail}[1]{\ottdrule[#1]{%
+\ottpremise{\Psi  \vdash  \sigma_{\ottmv{i}}  \ottsym{<:}  \tau _{\ottmv{i}}}%
+}{
+\texttt{\textcolor{red}{<<no parses (char 91): Psi \mbox{$\mid$}- \{ l1 : t1, .. , ln : tn, l'1 : t'1, .., l'm : t'm \} <: \{ l1 : u1, .., ln: un \mbox{$\mid$} Dyn \}*** >>}}}{%
+{\ottdrulename{ConstrSolves\_DynTail}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXDynRecordTwo}[1]{\ottdrule[#1]{%
+\ottpremise{\Psi  \vdash  \sigma_{\ottmv{i}}  \ottsym{<:}  \tau }%
+}{
+\texttt{\textcolor{red}{<<no parses (char 41): Psi \mbox{$\mid$}- \{ l1 : t1, .., ln : tn\} <: \{\_ : u\}*** >>}}}{%
+{\ottdrulename{ConstrSolves\_DynRecord2}}{}%
+}}
+
+\newcommand{\ottdefnsolvesXXas}[1]{\begin{ottdefnblock}[#1]{$\Psi  \vdash  \sigma  \ottsym{<:}  \tau  \, \twoheadrightarrow \, \sigma_{{\mathrm{1}}}  \ottsym{<:}  \ottsym{u1,}  \ottsym{..,}  \sigma_{\ottmv{n}}  \ottsym{<:}  \tau _{\ottmv{n}}$}{}
+\ottusedrule{\ottdruleConstrSolvesXXReflVar{}}
+\ottusedrule{\ottdruleConstrSolvesXXReflRowVar{}}
+\ottusedrule{\ottdruleConstrSolvesXXReflForall{}}
+\ottusedrule{\ottdruleConstrSolvesXXReflForallRow{}}
+\ottusedrule{\ottdruleConstrSolvesXXArrow{}}
+\ottusedrule{\ottdruleConstrSolvesXXDyn{}}
+\ottusedrule{\ottdruleConstrSolvesXXArray{}}
+\ottusedrule{\ottdruleConstrSolvesXXDynRecordOne{}}
+\ottusedrule{\ottdruleConstrSolvesXXRecord{}}
+\ottusedrule{\ottdruleConstrSolvesXXDynTail{}}
+\ottusedrule{\ottdruleConstrSolvesXXDynRecordTwo{}}
+\end{ottdefnblock}}
+
 
 \newcommand{\ottdefnsJstlc}{
-\ottdefnsubtyping{}\ottdefntype{}\ottdefninfersXXhead{}\ottdefninfers{}\ottdefnchecks{}\ottdefninstXXas{}}
+\ottdefnsubtyping{}\ottdefntype{}\ottdefninfersXXhead{}\ottdefninfers{}\ottdefnchecks{}\ottdefninstXXas{}\ottdefnsolvesXXas{}}
 
 \newcommand{\ottdefnss}{
 \ottdefnsJstlc
@@ -762,7 +892,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        51 good    0 bad
-Definition rule clauses: 104 good    0 bad
+Definition rules:        51 good    11 bad
+Definition rule clauses: 112 good    12 bad
 \end{verbatim}
 \end{document}
