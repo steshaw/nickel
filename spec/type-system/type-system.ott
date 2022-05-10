@@ -26,6 +26,7 @@ rows_enum :: 'rows_enum_' ::=
  | rows_enum_notail       ::   :: NoTail
  | rows_enum_notail '|' A ::   :: Tail
 
+
 t_mono {{ tex \rho }} :: 't_mono_' ::=
  | Dyn                        ::   :: Dyn
  | a                          ::   :: TypeVar
@@ -56,22 +57,32 @@ t {{ tex \sigma }}, u {{ tex \tau }} :: 't_' ::=
  | t [ u / a ]                :: M :: Subst
  | t [ rows / A ]             :: M :: SubstRow
 
-t_unif {{ tex \sigma }}       :: 't_unif_' ::=
+rows_notail_unif {{ tex \rho }} :: 'rows_notail_unif_' ::=
+ | empty                            ::  :: Empty
+ | rows_notail_unif , l : t_unif    ::  :: Cons
+ | l1 : t_unif1 , .. , ln : t_unifn ::  :: Rows
+
+rows_unif :: 'rows_unif_' ::=
+ | rows_notail_unif         ::   :: NoTail
+ | rows_notail_unif '|' A   ::   :: Tail
+ | rows_notail_unif '|' Dyn ::   :: DynTail
+
+t_unif {{ tex \sigma }}, u_unif {{ tex \tau }} :: 't_unif_' ::=
  | d                          ::   :: UnifVar
  | Dyn                        ::   :: Dyn
  | a                          ::   :: TypeVar
  | A                          ::   :: RowVar
- | t1 -> t2                   ::   :: Fun
- | { rows }                   ::   :: Record
- | { _ : t }                  ::   :: DynRecord
+ | t_unif1 -> t_unif2         ::   :: Fun
+ | { rows_unif }              ::   :: Record
+ | { _ : t_unif }             ::   :: DynRecord
  | < rows_enum >              ::   :: Enum
- | Array t                    ::   :: Array
+ | Array t_unif               ::   :: Array
  | # e                        ::   :: Contract
- | forall a1 ... an . t       ::   :: Forall
- | forall A1 ... An . t       ::   :: ForallRow
- | ( t )                      :: S :: Parens
- | t [ u / a ]                :: M :: Subst
- | t [ rows / A ]             :: M :: SubstRow
+ | forall a1 ... an . t_unif  ::   :: Forall
+ | forall A1 ... An . t_unif  ::   :: ForallRow
+ | ( t_unif )                 :: S :: Parens
+ | t_unif [ u_unif / a ]      :: M :: Subst
+ | t_unif [ rows / A ]        :: M :: SubstRow
 
 e :: 'e_' ::=
  | null                                       ::   :: Null
@@ -133,8 +144,17 @@ C, U :: 'constr_' ::=
  | t_unif <: t_unif'           ::   :: Sub
  | t_unif = t_unif'            ::   :: Eq
 
+% FIXME: this mess of lists, contexts, recursive defs...
+% Makes LHS constr solving rule ambiguous
+
 Clist :: 'constr_list_' ::=
- | C1 , .. , Cn                  ::   :: list
+ | C                    ::  :: Constr
+ | C1 , .. , Cn         ::  :: ConstrList
+
+Ccontext {{ tex \Theta }} :: 'constr_ctxt_' ::=
+ | empty                ::  :: nil
+ | Ccontext , Clist     ::  :: cons {{ tex \Theta, [[Clist]] }}
+
 
 G {{ tex \Gamma }} :: 'ctx_' ::=
  | empty        ::  :: nil
@@ -151,11 +171,12 @@ Psi {{ tex \Psi }} :: 'typectx_' ::=
 
 grammar
 formula :: 'formula_' ::=
- | judgement              :: :: judgement
- | binding set_in G       :: :: binding
- | typebinding set_in Psi :: :: typebinding
- | n <= m                 :: :: inequality
- | t is_not_var           :: :: type_not_var
+ | judgement               :: :: judgement
+ | binding set_in G        :: :: binding
+ | typebinding set_in Psi  :: :: typebinding
+ | n <= m                  :: :: inequality
+ | t_unif is_not_var       :: :: type_not_var
+ | t_unif is_not_unif_var  :: :: type_not_unif_var
 
 terminals :: 'terminals_' ::=
  | ->               ::  :: Arrow  {{ tex \to }}
@@ -164,7 +185,7 @@ terminals :: 'terminals_' ::=
  | forall           ::  :: Forall {{ tex \forall }}
  | |-               ::  :: Entails {{ tex \vdash }}
  | infers           ::  :: infers {{ tex {\color{red}\Rightarrow} }}
- | solves_as        ::  :: solves_as {{ tex \twoheadrightarrow }}
+ | constr_solves    ::  :: constr_solves {{ tex \twoheadrightarrow }}
  | infers_head      ::  :: infers_head {{ tex {\color{red}\Rightarrow}^h }}
  | checks           ::  :: checks {{ tex {\color{blue}\Leftarrow} }}
  | checks_poly      ::  :: checks_poly {{ tex {\color{blue}\Leftarrow}^\forall }}
@@ -177,16 +198,19 @@ terminals :: 'terminals_' ::=
  | @                ::  :: Contract {{ tex \mathbin{@} }}
  | <=               ::  :: LessOrEq {{ tex \leq }}
  | is_not_var       ::  :: IsNotVar {{ tex \text{not a variable} }}
+ | is_not_unif_var  ::  :: IsNotUnifVar {{ tex {\neq {?a} } }}
 
 subrules
   t_mono <:: t
+  t <:: t_unif
   v <:: e
   h <:: e
   whnf <:: e
+  rows <:: rows_unif
+  rows_notail <:: rows_notail_unif
 
 defns
 Jstlc :: '' ::=
-
 defn
 Psi |- t1 <: t2 :: :: subtyping :: Sub_
 by
@@ -197,7 +221,7 @@ Psi |- a <: a
 
 A set_in Psi
 ------------ :: ReflRowVar
-Psi |- A <: A 
+Psi |- A <: A
 
 --------------------------------------------------- :: ReflForall
 Psi |- forall a1 ... an . t <: forall a1 ... an . t
@@ -483,62 +507,67 @@ G |- e inst_as t1, .., tn, t_mono :: :: inst_as :: BidirInst_
   by
 
 defn
-Psi, Clist ||- Clist' :: :: solves_as :: ConstrSolves_
+Psi , Ccontext constr_solves Ccontext' :: :: constr_solves :: ConstrSolves_
   by
 
-a set_in Psi
----------------------------- :: ReflVar
-Psi ||- a <: a solves_as
+----------------------------------------------------------- :: Refl
+Psi, Ccontext, t_unif <: t_unif constr_solves Ccontext
 
-A set_in Psi
----------------------------- :: ReflRowVar
-Psi ||- A <: A solves_as
+-------------------------------------------------------- :: VarUnif
+Psi, Ccontext, d <: a constr_solves Ccontext, d = a
 
-A set_in Psi
----------------------------- :: ReflUnifVar
-Psi ||- d <: d solves_as
+-------------------------------------------------------- :: RowVarUnif
+Psi, Ccontext, d <: A constr_solves Ccontext, d = A
 
------------------------------------------------------------------- :: ReflForall
-Psi ||- forall a1 ... an . t <: forall a1 ... an . t solves_as
+-------------------------------------------------------------------------------------------- :: ForallUnif
+Psi, Ccontext, d <: forall a1 .. an . t constr_solves Ccontext, d = forall a1 .. an . t
 
------------------------------------------------------------------- :: ReflForallRow
-Psi ||- forall A1 ... An . t <: forall A1 ... An . t solves_as
+-------------------------------------------------------------------------------------------- :: ForallRowUnif
+Psi, Ccontext, d <: forall a1 .. an . t constr_solves Ccontext, d = forall a1 .. an . t
 
-Psi |- d <: t1 -> t2
---------------------------------------- :: Arrow
-Psi ||- t1 <: u1, u2 <: t2, d = u1 -> u2
+-------------------------------------------------------------------------------------------------------------------- :: ArrowUnif
+Psi, Ccontext , d <: t_unif1 -> t_unif2 constr_solves Ccontext , t_unif1 <: d'1 , d'2 <: t_unif2 , d = d'1 -> d'2
 
+----------------------------------------------------------------------------------- :: ArrayUnif
+Psi, Ccontext, d <: Array t_unif constr_solves Ccontext, d' <: t_unif, d = Array d'
 
-t is_not_var
-t is_not_unif_var
-------------------------------- :: Dyn
-Psi ||- t <: Dyn
+----------------------------------------------------------------------------------------------------------------------------- :: RecordUnif
+Psi, Ccontext , d <: {l1 : t1, .., li : ti} constr_solves Ccontext , d'1 <: t1, .. , d'i <: ti , d = {l1 : d'1, .., li : d'i}
 
-Psi |- d <: Array t
---------------------------- :: Array
-Psi ||- u <: t, d = Array u
+----------------------------------------------------------------------- :: DynRecordUnif
+Psi, Ccontext, d <: {_: t} constr_solves Ccontext, d' <: t, d = {_: d'}
+
+------------------------------------------------------------ :: Var
+Psi, Ccontext , t_unif <: t_unif constr_solves Ccontext
+
+t_unif is_not_var
+t_unif is_not_unif_var
+-------------------------------------------------------- :: Dyn
+Psi, Ccontext, t_unif <: Dyn constr_solves Ccontext
+
+------------------------------------------------------------------------------------ :: Array
+Psi, Ccontext, Array t_unif <: Array u_unif constr_solves Ccontext, t_unif <: u_unif
 
 % Etc for all forms d <: T a1 .. an
 
-Psi |- t <: u
---------------------------------------- :: DynRecord1
-Psi ||- {_ : t} <: {_ : u}
+------------------------------------------------------------------- :: DynRecord1
+Psi, Ccontext, {_: t} <: {_: u} constr_solves Ccontext, t <: u
 
-Psi |- ti <: ui
--------------------------------------------------------- :: Record
-Psi |- { l1 : t1, .., ln : tn} <: { l1 : u1, .., ln: un}
+------------------------------------------------------------------------------------------------------------------- :: Record
+Psi, Ccontext , {l1 : t_unif1, .. , li : t_unifi} <: {l1 : u_unif1, .., li : u_unifi} constr_solves Ccontext , t_unif1 <: u_unif1, .. , t_unifi <: u_unifi
 
-Psi |- ti <: ui
------------------------------------------------------------------------------------------- :: DynTail
-Psi |- { l1 : t1, .. , ln : tn, l'1 : t'1, .., l'm : t'm } <: { l1 : u1, .., ln: un | Dyn }
+------------------------------------------------------------------------------------------------------- :: DynRecord2
+Psi, Ccontext , { l1 : t1, .., li : ti} <: {_ : u} constr_solves Ccontext , t1 <: u , .. , ti <: u
 
-Psi |- ti <: u
---------------------------------------- :: DynRecord2
-Psi |- { l1 : t1, .., ln : tn} <: {_ : u}
+% forall C in Ccontext, C solved and C != t <: c
+t_unif1 not_unif_var
+..
+t_unifi not_unif_var
+% max t1 .. tj = t_unif'
+------------------------------------------------------------------------------------------------------------------------------------------------------- :: UpperBound
+Psi, Ccontext , t_unif1 <: c , .. , t_unifi <: c , d1 <: c , .. , dj <: c constr_solves Ccontext , d1 <: t_unif' , .. , dj <: t_unif' , c = t_unif'
 
 % then constraint of the form ?d <: a
-
-% then constraint of the form 
 
 %defn
 %e --> e' :: :: Jeval :: E_
