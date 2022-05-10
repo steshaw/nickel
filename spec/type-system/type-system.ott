@@ -131,6 +131,10 @@ binding :: 'bnd_' ::=
 
 C, U :: 'constr_' ::=
  | t_unif <: t_unif'           ::   :: Sub
+ | t_unif = t_unif'            ::   :: Eq
+
+Clist :: 'constr_list_' ::=
+ | C1 , .. , Cn                  ::   :: list
 
 G {{ tex \Gamma }} :: 'ctx_' ::=
  | empty        ::  :: nil
@@ -479,40 +483,46 @@ G |- e inst_as t1, .., tn, t_mono :: :: inst_as :: BidirInst_
   by
 
 defn
-Psi |- t <: u solves_as t1 <: u1, .., tn <: un :: :: solves_as :: ConstrSolves_
+Psi, Clist ||- Clist' :: :: solves_as :: ConstrSolves_
   by
 
 a set_in Psi
------------------------ :: ReflVar
-Psi |- a <: a solves_as 
+---------------------------- :: ReflVar
+Psi ||- a <: a solves_as
 
 A set_in Psi
------------------------ :: ReflRowVar
-Psi |- A <: A solves_as
+---------------------------- :: ReflRowVar
+Psi ||- A <: A solves_as
 
-------------------------------------------------------------- :: ReflForall
-Psi |- forall a1 ... an . t <: forall a1 ... an . t solves_as
+A set_in Psi
+---------------------------- :: ReflUnifVar
+Psi ||- d <: d solves_as
 
-------------------------------------------------------------- :: ReflForallRow
-Psi |- forall A1 ... An . t <: forall A1 ... An . t solves_as
+------------------------------------------------------------------ :: ReflForall
+Psi ||- forall a1 ... an . t <: forall a1 ... an . t solves_as
 
+------------------------------------------------------------------ :: ReflForallRow
+Psi ||- forall A1 ... An . t <: forall A1 ... An . t solves_as
 
-Psi |-  <: t4
---------------------------- :: Arrow
-Psi |- t1 -> t2 <: t3 -> t4
+Psi |- d <: t1 -> t2
+--------------------------------------- :: Arrow
+Psi ||- t1 <: u1, u2 <: t2, d = u1 -> u2
 
 
 t is_not_var
---------------- :: Dyn
-Psi |- t <: Dyn
+t is_not_unif_var
+------------------------------- :: Dyn
+Psi ||- t <: Dyn
 
-Psi |- t <: u
---------------------------------------- :: Array
-Psi |- Array t <: Array u
+Psi |- d <: Array t
+--------------------------- :: Array
+Psi ||- u <: t, d = Array u
+
+% Etc for all forms d <: T a1 .. an
 
 Psi |- t <: u
 --------------------------------------- :: DynRecord1
-Psi |- {_ : t} <: {_ : u}
+Psi ||- {_ : t} <: {_ : u}
 
 Psi |- ti <: ui
 -------------------------------------------------------- :: Record
@@ -526,23 +536,9 @@ Psi |- ti <: u
 --------------------------------------- :: DynRecord2
 Psi |- { l1 : t1, .., ln : tn} <: {_ : u}
 
-%Psi |- u
-%Psi |- t1[u/a] <: t2
-%------------------------- :: ForallLeft
-%Psi |- forall a. t1 <: t2
-%
-%%Psi |- {rows}'
-%Psi |- t1[rows/A] <: t2
-%------------------------- :: ForallRowLeft
-%Psi |- forall A. t1 <: t2
-%
-%Psi, a |- t1 <: t2
-%------------------------- :: ForallRight
-%Psi |- t1 <: forall a. t2
+% then constraint of the form ?d <: a
 
-%Psi, A |- t1 <: t2
-%------------------------- :: ForallRowRight
-%Psi |- t1 <: forall A. t2
+% then constraint of the form 
 
 %defn
 %e --> e' :: :: Jeval :: E_

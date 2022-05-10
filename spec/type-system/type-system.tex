@@ -178,7 +178,12 @@
 
 \newcommand{\ottC}{
 \ottrulehead{\ottnt{C}  ,\ \ottnt{U}}{::=}{}\ottprodnewline
-\ottfirstprodline{|}{\sigma  \ottsym{<:}  \sigma'}{}{}{}{}}
+\ottfirstprodline{|}{\sigma  \ottsym{<:}  \sigma'}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\sigma  \ottsym{=}  \sigma'}{}{}{}{}}
+
+\newcommand{\ottClist}{
+\ottrulehead{\ottnt{Clist}}{::=}{}\ottprodnewline
+\ottfirstprodline{|}{\ottnt{C_{{\mathrm{1}}}}  \ottsym{,} \, .. \, \ottsym{,}  \ottnt{C_{\ottmv{n}}}}{}{}{}{}}
 
 \newcommand{\ottG}{
 \ottrulehead{\Gamma}{::=}{}\ottprodnewline
@@ -234,7 +239,7 @@
 \ottprodline{|}{\Gamma  \vdash  \ottnt{e} \, {\color{red}\Rightarrow} \, \sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Gamma  \vdash  \ottnt{e} \, {\color{blue}\Leftarrow} \, \sigma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Gamma  \vdash  \ottnt{e} \, \rightsquigarrow \, \ottsym{t1,}  \ottsym{..,}  \ottsym{tn,}  \rho}{}{}{}{}\ottprodnewline
-\ottprodline{|}{\Psi  \vdash  \sigma  \ottsym{<:}  \tau  \, \twoheadrightarrow \, \sigma_{{\mathrm{1}}}  \ottsym{<:}  \ottsym{u1,}  \ottsym{..,}  \sigma_{\ottmv{n}}  \ottsym{<:}  \tau _{\ottmv{n}}}{}{}{}{}}
+\ottprodline{|}{\ottsym{Psi,}  \ottnt{Clist}  \ottsym{\mbox{$\mid$}\mbox{$\mid$}-}  \ottnt{Clist'}}{}{}{}{}}
 
 \newcommand{\ottjudgement}{
 \ottrulehead{\ottnt{judgement}}{::=}{}\ottprodnewline
@@ -262,6 +267,7 @@
 \ottprodline{|}{\ottnt{pat}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{binding}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{C}}{}{}{}{}\ottprodnewline
+\ottprodline{|}{\ottnt{Clist}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Gamma}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\ottnt{typebinding}}{}{}{}{}\ottprodnewline
 \ottprodline{|}{\Psi}{}{}{}{}\ottprodnewline
@@ -283,6 +289,7 @@
 \ottpat\ottinterrule
 \ottbinding\ottinterrule
 \ottC\ottinterrule
+\ottClist\ottinterrule
 \ottG\ottinterrule
 \otttypebinding\ottinterrule
 \ottPsi\ottinterrule
@@ -780,7 +787,7 @@
 \newcommand{\ottdruleConstrSolvesXXReflVar}[1]{\ottdrule[#1]{%
 \ottpremise{\alpha \, \in \, \Psi}%
 }{
-\texttt{\textcolor{red}{<<no parses (char 23): Psi \mbox{$\mid$}- a <: a solves\_as***  >>}}}{%
+\texttt{\textcolor{red}{<<no parses (char 6): Psi \mbox{$\mid$}\mbox{$\mid$}***- a <: a solves\_as >>}}}{%
 {\ottdrulename{ConstrSolves\_ReflVar}}{}%
 }}
 
@@ -788,29 +795,37 @@
 \newcommand{\ottdruleConstrSolvesXXReflRowVar}[1]{\ottdrule[#1]{%
 \ottpremise{\theta \, \in \, \Psi}%
 }{
-\texttt{\textcolor{red}{<<no parses (char 23): Psi \mbox{$\mid$}- A <: A solves\_as*** >>}}}{%
+\texttt{\textcolor{red}{<<no parses (char 6): Psi \mbox{$\mid$}\mbox{$\mid$}***- A <: A solves\_as >>}}}{%
 {\ottdrulename{ConstrSolves\_ReflRowVar}}{}%
+}}
+
+
+\newcommand{\ottdruleConstrSolvesXXReflUnifVar}[1]{\ottdrule[#1]{%
+\ottpremise{\theta \, \in \, \Psi}%
+}{
+\texttt{\textcolor{red}{<<no parses (char 6): Psi \mbox{$\mid$}\mbox{$\mid$}***- d <: d solves\_as >>}}}{%
+{\ottdrulename{ConstrSolves\_ReflUnifVar}}{}%
 }}
 
 
 \newcommand{\ottdruleConstrSolvesXXReflForall}[1]{\ottdrule[#1]{%
 }{
-\texttt{\textcolor{red}{<<no parses (char 61): Psi \mbox{$\mid$}- forall a1 ... an . t <: forall a1 ... an . t solves\_as*** >>}}}{%
+\texttt{\textcolor{red}{<<no parses (char 6): Psi \mbox{$\mid$}\mbox{$\mid$}***- forall a1 ... an . t <: forall a1 ... an . t solves\_as >>}}}{%
 {\ottdrulename{ConstrSolves\_ReflForall}}{}%
 }}
 
 
 \newcommand{\ottdruleConstrSolvesXXReflForallRow}[1]{\ottdrule[#1]{%
 }{
-\texttt{\textcolor{red}{<<no parses (char 61): Psi \mbox{$\mid$}- forall A1 ... An . t <: forall A1 ... An . t solves\_as*** >>}}}{%
+\texttt{\textcolor{red}{<<no parses (char 6): Psi \mbox{$\mid$}\mbox{$\mid$}***- forall A1 ... An . t <: forall A1 ... An . t solves\_as >>}}}{%
 {\ottdrulename{ConstrSolves\_ReflForallRow}}{}%
 }}
 
 
 \newcommand{\ottdruleConstrSolvesXXArrow}[1]{\ottdrule[#1]{%
-\ottpremise{\texttt{\textcolor{red}{<<no parses (char 11): Psi \mbox{$\mid$}-  <: ***t4 >>}}}%
+\ottpremise{\texttt{\textcolor{red}{<<no parses (char 8): Psi \mbox{$\mid$}- d*** <: t1 -> t2 >>}}}%
 }{
-\texttt{\textcolor{red}{<<no parses (char 27): Psi \mbox{$\mid$}- t1 -> t2 <: t3 -> t4*** >>}}}{%
+\texttt{\textcolor{red}{<<no parses (char 6): Psi \mbox{$\mid$}\mbox{$\mid$}***- t1 <: u1, u2 <: t2, d = u1 -> u2 >>}}}{%
 {\ottdrulename{ConstrSolves\_Arrow}}{}%
 }}
 
@@ -818,7 +833,7 @@
 \newcommand{\ottdruleConstrSolvesXXDyn}[1]{\ottdrule[#1]{%
 \ottpremise{\sigma \, \text{not a variable}}%
 }{
-\texttt{\textcolor{red}{<<no parses (char 15): Psi \mbox{$\mid$}- t <: Dyn*** >>}}}{%
+\texttt{\textcolor{red}{<<no parses (char 6): Psi \mbox{$\mid$}\mbox{$\mid$}***- t <: Dyn >>}}}{%
 {\ottdrulename{ConstrSolves\_Dyn}}{}%
 }}
 
@@ -826,7 +841,7 @@
 \newcommand{\ottdruleConstrSolvesXXArray}[1]{\ottdrule[#1]{%
 \ottpremise{\Psi  \vdash  \sigma  \ottsym{<:}  \tau }%
 }{
-\texttt{\textcolor{red}{<<no parses (char 25): Psi \mbox{$\mid$}- Array t <: Array u*** >>}}}{%
+\texttt{\textcolor{red}{<<no parses (char 6): Psi \mbox{$\mid$}\mbox{$\mid$}***- Array t <: Array u >>}}}{%
 {\ottdrulename{ConstrSolves\_Array}}{}%
 }}
 
@@ -834,7 +849,7 @@
 \newcommand{\ottdruleConstrSolvesXXDynRecordOne}[1]{\ottdrule[#1]{%
 \ottpremise{\Psi  \vdash  \sigma  \ottsym{<:}  \tau }%
 }{
-\texttt{\textcolor{red}{<<no parses (char 25): Psi \mbox{$\mid$}- \{\_ : t\} <: \{\_ : u\}*** >>}}}{%
+\texttt{\textcolor{red}{<<no parses (char 6): Psi \mbox{$\mid$}\mbox{$\mid$}***- \{\_ : t\} <: \{\_ : u\} >>}}}{%
 {\ottdrulename{ConstrSolves\_DynRecord1}}{}%
 }}
 
@@ -862,9 +877,10 @@
 {\ottdrulename{ConstrSolves\_DynRecord2}}{}%
 }}
 
-\newcommand{\ottdefnsolvesXXas}[1]{\begin{ottdefnblock}[#1]{$\Psi  \vdash  \sigma  \ottsym{<:}  \tau  \, \twoheadrightarrow \, \sigma_{{\mathrm{1}}}  \ottsym{<:}  \ottsym{u1,}  \ottsym{..,}  \sigma_{\ottmv{n}}  \ottsym{<:}  \tau _{\ottmv{n}}$}{}
+\newcommand{\ottdefnsolvesXXas}[1]{\begin{ottdefnblock}[#1]{$\ottsym{Psi,}  \ottnt{Clist}  \ottsym{\mbox{$\mid$}\mbox{$\mid$}-}  \ottnt{Clist'}$}{}
 \ottusedrule{\ottdruleConstrSolvesXXReflVar{}}
 \ottusedrule{\ottdruleConstrSolvesXXReflRowVar{}}
+\ottusedrule{\ottdruleConstrSolvesXXReflUnifVar{}}
 \ottusedrule{\ottdruleConstrSolvesXXReflForall{}}
 \ottusedrule{\ottdruleConstrSolvesXXReflForallRow{}}
 \ottusedrule{\ottdruleConstrSolvesXXArrow{}}
@@ -892,7 +908,7 @@
 \ottall
 
 \begin{verbatim}
-Definition rules:        51 good    11 bad
-Definition rule clauses: 112 good    12 bad
+Definition rules:        51 good    12 bad
+Definition rule clauses: 113 good    13 bad
 \end{verbatim}
 \end{document}
