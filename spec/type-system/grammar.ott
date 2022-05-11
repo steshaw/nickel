@@ -21,7 +21,7 @@ rows_notail {{ tex \rho }} :: 'rows_notail_' ::=
 
 rows_enum_notail {{ tex \chi }} :: 'rows_enum_notail_' ::=
  | empty                ::  :: Empty
- | l1 , ... , ln         ::  :: Many
+ | l1 , ... , ln        ::  :: Many
  | rows_enum_notail , l ::  :: Append
 
 rows :: 'rows_' ::=
@@ -32,7 +32,6 @@ rows :: 'rows_' ::=
 rows_enum :: 'rows_enum_' ::=
  | rows_enum_notail       ::   :: NoTail
  | rows_enum_notail '|' A ::   :: Tail
-
 
 t_mono {{ tex \rho }} :: 't_mono_' ::=
  | Dyn                        ::   :: Dyn
@@ -45,8 +44,8 @@ t_mono {{ tex \rho }} :: 't_mono_' ::=
  | Array t                    ::   :: Array
  | # e                        ::   :: Contract
  | ( t_mono )                 :: S :: Parens
-% | t_mono [ t_mono' / a ]     :: M :: Subst
-% | t_mono [ rows / A ]        :: M :: SubstRow
+% | t_mono [ t_mono' / a ]    :: M :: Subst
+% | t_mono [ rows / A ]       :: M :: SubstRow
 
 t {{ tex \sigma }}, u {{ tex \tau }} :: 't_' ::=
  | t_mono                     ::   :: Monotype {{ tex [[t_mono]] }}
