@@ -5,36 +5,34 @@ Psi |- t1 <: t2 :: :: subtyping :: Sub_
 by
 
 a set_in Psi
------------- :: ReflVar
+------------- :: ReflVar
 Psi |- a <: a
 
 A set_in Psi
------------- :: ReflRowVar
+------------- :: ReflRowVar
 Psi |- A <: A
 
---------------------------------------------------- :: ReflForall
-Psi |- forall a1 ... an . t <: forall a1 ... an . t
+------------------------------------------------------------- :: ReflForall
+Psi |- forall a1 ... an . t_mono <: forall a1 ... an . t_mono
 
---------------------------------------------------- :: ReflForallRow
-Psi |- forall A1 ... An . t <: forall A1 ... An . t
-
+------------------------------------------------------------- :: ReflForallRow
+Psi |- forall A1 ... An . t_mono <: forall A1 ... An . t_mono
 
 Psi |- t3 <: t1
 Psi |- t2 <: t4
 --------------------------- :: Arrow
 Psi |- t1 -> t2 <: t3 -> t4
 
-
 t is_not_var
 --------------- :: Dyn
 Psi |- t <: Dyn
 
 Psi |- t <: u
---------------------------------------- :: Array
+------------------------- :: Array
 Psi |- Array t <: Array u
 
 Psi |- t <: u
---------------------------------------- :: DynRecord1
+------------------------- :: DynRecord1
 Psi |- {_ : t} <: {_ : u}
 
 Psi |- ti <: ui
@@ -90,21 +88,21 @@ G, x : t1 |- e2 has_type t2
 --------------------------------- :: Let
 G |- let x = e1 in e2 has_type t2
 
-G |- e has_type t
---------------------------- :: Gen
-G |- e has_type forall a. t
+G |- e has_type t_mono
+----------------------------------------- :: Gen
+G |- e has_type forall a1 ... an . t_mono
 
-G |- e has_type t
---------------------------- :: GenRow
-G |- e has_type forall A. t
+G |- e has_type t_mono
+----------------------------------------- :: GenRow
+G |- e has_type forall A1 ... An . t_mono
 
-G |- e has_type forall a. t
---------------------------- :: Inst
-G |- e has_type t[u'/a]
+G |- e has_type forall a1 ... an . t_mono
+----------------------------------------- :: Inst
+G |- e has_type t_mono[u'/a]
 
-G |- e has_type forall A. t
------------------------------ :: InstRow
-G |- e has_type t[rows/A]
+G |- e has_type forall A1 ... An . t_mono
+----------------------------------------- :: InstRow
+G |- e has_type t_mono[rows/A]
 
 G |- ei has_type ti
 ----------------------------------------------------------- :: RecordI
@@ -309,22 +307,22 @@ Psi, Ccontext, d <: a constr_solves Ccontext, d = a
 Psi, Ccontext, d <: A constr_solves Ccontext, d = A
 
 -------------------------------------------------------------------------------------------- :: ForallUnif
-Psi, Ccontext, d <: forall a1 .. an . t constr_solves Ccontext, d = forall a1 .. an . t
+Psi, Ccontext, d <: forall a1 .. an . t_unif_mono constr_solves Ccontext, d = forall a1 .. an . t_unif_mono
 
--------------------------------------------------------------------------------------------- :: ForallRowUnif
-Psi, Ccontext, d <: forall a1 .. an . t constr_solves Ccontext, d = forall a1 .. an . t
+----------------------------------------------------------------------------------------------------------- :: ForallRowUnif
+Psi, Ccontext, d <: forall a1 .. an . t_unif_mono constr_solves Ccontext, d = forall a1 .. an . t_unif_mono
 
 -------------------------------------------------------------------------------------------------------------------- :: ArrowUnif
-Psi, Ccontext , d <: t_unif1 -> t_unif2 constr_solves Ccontext , t_unif1 <: d'1 , d'2 <: t_unif2 , d = d'1 -> d'2
+Psi, Ccontext , d <: t_unif1 -> t_unif2 constr_solves Ccontext , ( t_unif1 <: d1 , d2 <: t_unif2 , d = d1 -> d2 )
 
 ----------------------------------------------------------------------------------- :: ArrayUnif
-Psi, Ccontext, d <: Array t_unif constr_solves Ccontext, d' <: t_unif, d = Array d'
+Psi, Ccontext, d <: Array t_unif constr_solves Ccontext, ( f <: t_unif, d = Array f )
 
 ----------------------------------------------------------------------------------------------------------------------------- :: RecordUnif
-Psi, Ccontext , d <: {l1 : t1, .., li : ti} constr_solves Ccontext , d'1 <: t1, .. , d'i <: ti , d = {l1 : d'1, .., li : d'i}
+Psi, Ccontext , d <: {l1 : t1, .., li : ti} constr_solves Ccontext , (f1 <: t1, .. , fi <: ti , d = {l1 : f1, .., li : fi})
 
------------------------------------------------------------------------ :: DynRecordUnif
-Psi, Ccontext, d <: {_: t} constr_solves Ccontext, d' <: t, d = {_: d'}
+-------------------------------------------------------------------------------------- :: DynRecordUnif
+Psi, Ccontext, d <: {_: t_unif} constr_solves Ccontext, ( d1 <: t_unif, d = {_ : d1} )
 
 ------------------------------------------------------------ :: Var
 Psi, Ccontext , t_unif <: t_unif constr_solves Ccontext
@@ -349,12 +347,12 @@ Psi, Ccontext , {l1 : t_unif1, .. , li : t_unifi} <: {l1 : u_unif1, .., li : u_u
 Psi, Ccontext , { l1 : t1, .., li : ti} <: {_ : u} constr_solves Ccontext , t1 <: u , .. , ti <: u
 
 % forall C in Ccontext, C solved and C != t <: c
-t_unif1 not_unif_var
-..
-t_unifi not_unif_var
-% max t1 .. tj = t_unif'
+t_unifi is_not_unif_var
+max t1 .. tj = u_unif
+d <: t_unif' not_in Ccontext
+t_unif' <: d not_in Ccontext
 ------------------------------------------------------------------------------------------------------------------------------------------------------- :: UpperBound
-Psi, Ccontext , t_unif1 <: c , .. , t_unifi <: c , d1 <: c , .. , dj <: c constr_solves Ccontext , d1 <: t_unif' , .. , dj <: t_unif' , c = t_unif'
+Psi, Ccontext , ( t_unif1 <: d , .. , t_unifi <: d , d1 <: d , .. , dj <: d ) constr_solves Ccontext , ( d1 <: u_unif , .. , dj <: u_unif , d = u_unif )
 
 % then constraint of the form ?d <: a
 
