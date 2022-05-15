@@ -432,3 +432,8 @@ if possible, efficiently).
   inequalities from the point of view of the LHS (a variable with an upper
   bound).
 - **phase 3**: check `Dyn`
+
+## 2nd call with Arnaud
+
+- write down examples
+- write stuff down, start implementing
